@@ -1,7 +1,5 @@
 package redteam.geoquiz;
 
-import android.net.sip.SipAudioCall;
-import android.net.sip.SipSession;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;

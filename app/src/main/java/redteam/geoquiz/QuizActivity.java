@@ -19,6 +19,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String KEY_CURRBOOLEAN = "mCurrentAnsweredState";
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_australia, true),
@@ -30,6 +31,7 @@ public class QuizActivity extends AppCompatActivity {
     };
 
     private int mCurrentIndex = 0;
+    private Boolean mCurrentAnsweredState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +41,15 @@ public class QuizActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mCurrentAnsweredState = savedInstanceState.getBoolean(KEY_CURRBOOLEAN, false);
+            mQuestionBank[mCurrentIndex].setAnswered(mCurrentAnsweredState);
         }
 
         View.OnClickListener nextQuestionListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                mCurrentAnsweredState = false;
                 updateQuestion();
             }
         };
@@ -59,6 +64,8 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(QuizActivity.this, R.string.correct_toast, Toast.LENGTH_SHORT).show();
                 checkAnswer(true);
+                markQuestionAsAnswered();
+                updateQuestion();
             }
         });
 
@@ -69,6 +76,8 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(QuizActivity.this, R.string.incorrect_toast, Toast.LENGTH_SHORT).show();
                 checkAnswer(false);
+                markQuestionAsAnswered();
+                updateQuestion();
             }
         });
 
@@ -111,13 +120,16 @@ public class QuizActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-        Log.i(TAG, "onSaveInstanceState");
+        Log.i(TAG, "onSaveInstanceState()");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putBoolean(KEY_CURRBOOLEAN, mCurrentAnsweredState);
     }
 
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
+        mFalseButton.setEnabled(!mQuestionBank[mCurrentIndex].isAnswered());
+        mTrueButton.setEnabled(!mQuestionBank[mCurrentIndex].isAnswered());
     }
 
     private void checkAnswer(boolean userPressedTrue) {
@@ -133,5 +145,10 @@ public class QuizActivity extends AppCompatActivity {
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
                 .show();
+    }
+
+    private void markQuestionAsAnswered() {
+        mQuestionBank[mCurrentIndex].setAnswered(true);
+        mCurrentAnsweredState = true;
     }
 }

@@ -31,6 +31,8 @@ public class QuizActivity extends AppCompatActivity {
     };
 
     private int mCurrentIndex = 0;
+    private int mNumQuestionsCorrect = 0;
+    private int mNumQuestionsAnswered = 0;
     private Boolean mCurrentAnsweredState;
 
     @Override
@@ -120,7 +122,7 @@ public class QuizActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-        Log.i(TAG, "onSaveInstanceState()");
+        Log.d(TAG, "onSaveInstanceState(Bundle) called");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
         savedInstanceState.putBoolean(KEY_CURRBOOLEAN, mCurrentAnsweredState);
     }
@@ -133,18 +135,31 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     private void checkAnswer(boolean userPressedTrue) {
+        mNumQuestionsAnswered++;
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
 
         int messageResId = 0;
 
         if (userPressedTrue == answerIsTrue) {
             messageResId = R.string.correct_toast;
+            mNumQuestionsCorrect++;
         } else {
             messageResId = R.string.incorrect_toast;
         }
 
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
-                .show();
+        if(mNumQuestionsAnswered == mQuestionBank.length){
+            String result = "You answered " + mNumQuestionsCorrect + "/" + mNumQuestionsAnswered + " correctly. Press next to restart quiz.";
+            Toast.makeText(this, result, Toast.LENGTH_SHORT)
+                    .show();
+            for (Question question : mQuestionBank){
+                question.setAnswered(false);
+            }
+            mNumQuestionsAnswered = 0;
+            mNumQuestionsCorrect = 0;
+        }else {
+            Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     private void markQuestionAsAnswered() {

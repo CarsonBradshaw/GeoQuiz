@@ -1,12 +1,18 @@
 package redteam.geoquiz;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 public class CheatActivity extends AppCompatActivity {
 
@@ -15,9 +21,13 @@ public class CheatActivity extends AppCompatActivity {
     private static final String EXTRA_ANSWER_SHOWN =
             "com.bignerdranch.android.geoquiz.answer_shown";
 
+    private static final int MAX_ALLOWED_CHEATS = 3;
+
+
     private boolean mAnswerIsTrue;
 
     private TextView mAnswerTextView;
+    private TextView mVersionTextView;
     private Button mShowAnswerButton;
 
 
@@ -34,14 +44,44 @@ public class CheatActivity extends AppCompatActivity {
         mShowAnswerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                QuizActivity.mCurrentCheats++;
+
                 if (mAnswerIsTrue) {
                     mAnswerTextView.setText(R.string.true_button);
                 } else {
                     mAnswerTextView.setText(R.string.false_button);
                 }
                 setAnswerShownResult(true);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    int cx = mShowAnswerButton.getWidth() / 2;
+                    int cy = mShowAnswerButton.getHeight() / 2;
+                    float radius = mShowAnswerButton.getWidth();
+                    Animator anim = ViewAnimationUtils
+                            .createCircularReveal(mShowAnswerButton, cx, cy, radius, 0);
+                    anim.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            mShowAnswerButton.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    anim.start();
+                } else {
+                    mShowAnswerButton.setVisibility(View.INVISIBLE);
+                    if(QuizActivity.mCurrentCheats >= MAX_ALLOWED_CHEATS){
+                        mShowAnswerButton.setEnabled(false);
+                    }
+                }
             }
         });
+
+        if(QuizActivity.mCurrentCheats >= MAX_ALLOWED_CHEATS){
+            mShowAnswerButton.setEnabled(false);
+        }
+
+        mVersionTextView = (TextView) findViewById(R.id.version_text_view);
+        mVersionTextView.setText("API Level: " + Integer.toString(Build.VERSION.SDK_INT));
     }
 
     public static Intent newIntent(Context packageContext, boolean answerIsTrue) {

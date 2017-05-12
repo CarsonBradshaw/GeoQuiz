@@ -35,6 +35,7 @@ public class QuizActivity extends AppCompatActivity {
     private int mCurrentIndex = 0;
     private int mNumQuestionsCorrect = 0;
     private int mNumQuestionsAnswered = 0;
+    public static int mCurrentCheats = 0;
     private Boolean mCurrentAnsweredState = false;
     private boolean mIsCheater;
 
